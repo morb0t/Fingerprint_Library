@@ -8,9 +8,9 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/m0rbot/Projects/Fingerprint_Library/include",
-                "/home/m0rbot/Projects/Fingerprint_Library/src",
-                "/home/m0rbot/Projects/Fingerprint_Library/lib/Fingerprint",
+                "/home/m0rbot/Fingerprint/include",
+                "/home/m0rbot/Fingerprint/src",
+                "/home/m0rbot/Fingerprint/lib/Fingerprint",
                 "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                 "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                 "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -245,9 +245,9 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/m0rbot/Projects/Fingerprint_Library/include",
-                    "/home/m0rbot/Projects/Fingerprint_Library/src",
-                    "/home/m0rbot/Projects/Fingerprint_Library/lib/Fingerprint",
+                    "/home/m0rbot/Fingerprint/include",
+                    "/home/m0rbot/Fingerprint/src",
+                    "/home/m0rbot/Fingerprint/lib/Fingerprint",
                     "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                     "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                     "/home/m0rbot/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",

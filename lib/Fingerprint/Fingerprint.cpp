@@ -165,31 +165,52 @@ uint8_t Fingerprint::setPacketSize(uint8_t size)
     return (Fingerprint::WriteReg(FINGERPRINT_PACKET_REG_ADDR, size));
 }
 
+uint8_t Fingerprint::getModel(void)
+{
+    SEND_CMD_PACKET(FINGERPRINT_UPLOAD, 0x01);
+    return FINGERPRINT_OK;
+}
+
 uint8_t Fingerprint::getModel(uint8_t slot, uint8_t* out_buffer)
 {
-    GET_CMD_PACKET(FINGERPRINT_UPCHAR, slot);
-    if(packet.data[0] != FINGERPRINT_OK){
+    uint8_t cmdData[] = { FINGERPRINT_UPLOAD, slot };
+    Fingerprint_Packet cmdPacket(FINGERPRINT_COMMANDPACKET, sizeof(cmdData), cmdData);
+    while(mySerial->available()) mySerial->read();
+    sendPacket(cmdPacket);
+
+    Fingerprint_Packet packet;
+        int rc = getReplyPacket(&packet, DEFAULT_TIMEOUT * 3);
+        if (rc != FINGERPRINT_OK) {
+            return rc; // propagate exact error (e.g. FINGERPRINT_TIMEOUT)
+        }
+
+    if (packet.type != FINGERPRINT_ACKPACKET) {
+        return FINGERPRINT_PACKETRECIEVEERR;
+    }
+
+    if (packet.data[0] != FINGERPRINT_OK) {
         return packet.data[0];
     }
 
     int bytesRecv = 0;
-    while(bytesRecv < FINGERPRINT_TEMPLATE_SIZE*2){
-        if (getReplyPacket(&packet, DEFAULT_TIMEOUT) != FINGERPRINT_OK){
-            return FINGERPRINT_PACKETRECIEVEERR;
+    while (bytesRecv < FINGERPRINT_TEMPLATE_SIZE * 2) {
+        uint8_t res = getReplyPacket(&packet, DEFAULT_TIMEOUT*2);
+        if (res != FINGERPRINT_OK) {
+            return res;
         }
-        if (packet.type == FINGERPRINT_DATAPACKET || packet.type == FINGERPRINT_ENDDATAPACKET){
+        if (packet.type == FINGERPRINT_DATAPACKET || packet.type == FINGERPRINT_ENDDATAPACKET) {
             uint16_t payloadSize = packet.length - 2;
-            for(int i = 0; i < payloadSize; i++){
-                if(bytesRecv >= FINGERPRINT_TEMPLATE_SIZE*2){
+            for (int i = 0; i < payloadSize; i++) {
+                if (bytesRecv >= FINGERPRINT_TEMPLATE_SIZE * 2) {
                     break;
                 }
                 out_buffer[bytesRecv++] = packet.data[i];
             }
-        }else {
+        } else {
             return FINGERPRINT_BADPACKET;
         }
 
-        if(packet.type == FINGERPRINT_ENDDATAPACKET){
+        if (packet.type == FINGERPRINT_ENDDATAPACKET) {
             break;
         }
     }
@@ -223,6 +244,39 @@ uint8_t Fingerprint::downloadImage(){
             break;
         }
     }
+    return FINGERPRINT_OK;
+}
+
+uint8_t Fingerprint::downloadImageToBuffer(uint8_t* out_buffer, size_t maxLen, size_t* outLen){
+    if (outLen) *outLen = 0;
+    GET_CMD_PACKET(FINGERPRINT_UPIMAGE);
+    if(packet.data[0] != FINGERPRINT_OK){
+        return packet.data[0];
+    }
+    size_t written = 0;
+    while(true){
+        if (getReplyPacket(&packet) != FINGERPRINT_OK){
+            return FINGERPRINT_TIMEOUT;
+        }
+
+        if(packet.type == FINGERPRINT_DATAPACKET || packet.type == FINGERPRINT_ENDDATAPACKET){
+            uint16_t payloadSize = packet.length - 2;
+            for(int i = 0; i < payloadSize; i++){
+                if (written < maxLen) {
+                    out_buffer[written++] = packet.data[i];
+                } else {
+                    return FINGERPRINT_BADPACKET; // buffer too small
+                }
+            }
+        } else {
+            return FINGERPRINT_BADPACKET;
+        }
+
+        if (packet.type == FINGERPRINT_ENDDATAPACKET){
+            break;
+        }
+    }
+    if (outLen) *outLen = written;
     return FINGERPRINT_OK;
 }
 

@@ -107,7 +107,7 @@ struct Fingerprint_Packet {
         this->type = type;
         this->length = len;
         this->addr = 0xFFFFFFFF; 
-        uint16_t copy_len = (len > 256) ? 256 : len; 
+        uint16_t copy_len = (len > 300) ? 300 : len; 
         memcpy(this->data, data, copy_len);
     }
     
@@ -116,14 +116,14 @@ struct Fingerprint_Packet {
         type = 0;
         length = 0;
         addr = 0;
-        memset(data, 0, 256);
+        memset(data, 0, 300);
     }
 
     uint16_t start_code;
     uint32_t addr;
     uint8_t type;
     uint16_t length;
-    uint8_t data[256]; 
+    uint8_t data[300]; 
 };
 
 class Fingerprint {
@@ -142,8 +142,10 @@ class Fingerprint {
         uint8_t image2Tz(uint8_t slot = 1);
         uint8_t createModel();
 
-        uint8_t getModel(uint8_t slot, uint8_t* out_buffer); 
+        uint8_t getModel(void);
+        uint8_t getModel(uint8_t slot, uint8_t* out_buffer);
         uint8_t downloadImage();
+        uint8_t downloadImageToBuffer(uint8_t* out_buffer, size_t maxLen, size_t* outLen);
 
         uint8_t setPassword(uint32_t password);
         uint8_t LEDCtrl(bool on);
